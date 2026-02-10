@@ -1,29 +1,232 @@
 name: aws
-version: "1.0.0"
-description: "AWS compliance checks for S3, IAM, and cloud infrastructure"
+version: "2.0.0"
+description: "Comprehensive AWS compliance checks for S3, IAM, CloudTrail, EC2, RDS, and EBS"
 
 checks:
+  # --- S3 ---
   - id: s3-encryption
     description: "Verify that all S3 buckets have default encryption enabled"
     script: check_s3_encryption.py
     severity: high
     frameworks:
-      - SOC2
-      - NIST-800-53
-      - CIS-AWS
+      - SOC2-CC6.1
+      - NIST-SC-28
+      - CIS-AWS-2.1.1
+      - PCI-DSS-3.4
     params:
       - name: region
         required: false
         default: "us-east-1"
 
   - id: s3-public-access
-    description: "Verify that S3 buckets do not allow public access"
+    description: "Verify that S3 buckets block all public access"
     script: check_s3_public_access.py
     severity: critical
     frameworks:
-      - SOC2
-      - PCI-DSS
-      - CIS-AWS
+      - SOC2-CC6.1
+      - SOC2-CC6.6
+      - PCI-DSS-1.3
+      - CIS-AWS-2.1.2
+      - NIST-AC-3
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: s3-versioning
+    description: "Verify that S3 buckets have versioning enabled for data recovery"
+    script: check_s3_versioning.py
+    severity: medium
+    frameworks:
+      - SOC2-A1.2
+      - NIST-CP-9
+      - CIS-AWS-2.1.3
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: s3-logging
+    description: "Verify that S3 buckets have server access logging enabled"
+    script: check_s3_logging.py
+    severity: medium
+    frameworks:
+      - SOC2-CC7.2
+      - NIST-AU-2
+      - CIS-AWS-2.1.4
+      - PCI-DSS-10.2
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  # --- IAM ---
+  - id: iam-password-policy
+    description: "Verify IAM account password policy meets minimum requirements"
+    script: check_iam_password_policy.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-IA-5
+      - CIS-AWS-1.8
+      - PCI-DSS-8.2
+    params: []
+
+  - id: iam-mfa-enabled
+    description: "Verify that all IAM users with console access have MFA enabled"
+    script: check_iam_mfa.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - SOC2-CC6.2
+      - NIST-IA-2
+      - CIS-AWS-1.10
+      - PCI-DSS-8.3
+    params: []
+
+  - id: iam-root-mfa
+    description: "Verify the root account has MFA enabled"
+    script: check_iam_root_mfa.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-IA-2
+      - CIS-AWS-1.5
+      - PCI-DSS-8.3
+    params: []
+
+  - id: iam-unused-credentials
+    description: "Detect IAM credentials not used in the last 90 days"
+    script: check_iam_unused_creds.py
+    severity: medium
+    frameworks:
+      - SOC2-CC6.2
+      - NIST-AC-2
+      - CIS-AWS-1.12
+      - PCI-DSS-8.1.4
+    params:
+      - name: max_age_days
+        required: false
+        default: "90"
+
+  - id: iam-access-key-rotation
+    description: "Verify IAM access keys are rotated within 90 days"
+    script: check_iam_key_rotation.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-IA-5
+      - CIS-AWS-1.14
+      - PCI-DSS-8.2.4
+    params:
+      - name: max_age_days
+        required: false
+        default: "90"
+
+  # --- CloudTrail ---
+  - id: cloudtrail-enabled
+    description: "Verify CloudTrail is enabled in all regions"
+    script: check_cloudtrail_enabled.py
+    severity: critical
+    frameworks:
+      - SOC2-CC7.2
+      - SOC2-CC7.3
+      - NIST-AU-2
+      - NIST-AU-3
+      - CIS-AWS-3.1
+      - PCI-DSS-10.1
+    params: []
+
+  - id: cloudtrail-log-validation
+    description: "Verify CloudTrail log file validation is enabled"
+    script: check_cloudtrail_validation.py
+    severity: high
+    frameworks:
+      - SOC2-CC7.2
+      - NIST-AU-9
+      - CIS-AWS-3.2
+      - PCI-DSS-10.5
+    params: []
+
+  # --- EC2 / Security Groups ---
+  - id: sg-unrestricted-ssh
+    description: "Detect security groups allowing unrestricted SSH (0.0.0.0/0 on port 22)"
+    script: check_sg_ssh.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.6
+      - NIST-AC-4
+      - CIS-AWS-5.2
+      - PCI-DSS-1.2
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: sg-unrestricted-rdp
+    description: "Detect security groups allowing unrestricted RDP (0.0.0.0/0 on port 3389)"
+    script: check_sg_rdp.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.6
+      - NIST-AC-4
+      - CIS-AWS-5.3
+      - PCI-DSS-1.2
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: ebs-encryption
+    description: "Verify EBS volumes are encrypted"
+    script: check_ebs_encryption.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-SC-28
+      - CIS-AWS-2.2.1
+      - PCI-DSS-3.4
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  # --- RDS ---
+  - id: rds-encryption
+    description: "Verify RDS instances have encryption at rest enabled"
+    script: check_rds_encryption.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-SC-28
+      - CIS-AWS-2.3.1
+      - PCI-DSS-3.4
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: rds-public-access
+    description: "Verify RDS instances are not publicly accessible"
+    script: check_rds_public.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.6
+      - NIST-AC-4
+      - PCI-DSS-1.3
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: rds-backup-enabled
+    description: "Verify RDS instances have automated backups enabled"
+    script: check_rds_backup.py
+    severity: medium
+    frameworks:
+      - SOC2-A1.2
+      - NIST-CP-9
+      - PCI-DSS-12.10
     params:
       - name: region
         required: false

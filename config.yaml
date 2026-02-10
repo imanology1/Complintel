@@ -1,6 +1,7 @@
 # Comply-Intel Configuration
 # ===========================
 # This file tells the GRC Agent Factory which checks to run and how.
+# Run with: ./comply-intel --config config.yaml --report
 
 # Path to the directory containing agent packs
 packs_dir: "./packs"
@@ -9,7 +10,7 @@ packs_dir: "./packs"
 schedule: "once"
 
 # Number of checks to run in parallel
-concurrency: 4
+concurrency: 8
 
 # Timeout per check script
 timeout: "120s"
@@ -29,10 +30,15 @@ credentials:
   # AWS_REGION: "us-east-1"
   # GITHUB_TOKEN: "ghp_your_token_here"
 
+# =====================================================================
 # Checks to execute
 # Each entry references a pack name and a check ID from that pack.
+# =====================================================================
 checks:
-  # --- Linux Hardening ---
+
+  # ===========================================
+  # LINUX HARDENING (runs without credentials)
+  # ===========================================
   - pack: linux
     check: password-policy
     params:
@@ -42,21 +48,167 @@ checks:
   - pack: linux
     check: ssh-config
 
-  # --- AWS S3 Security ---
-  # Uncomment after setting AWS credentials above
+  - pack: linux
+    check: file-permissions
+
+  - pack: linux
+    check: firewall-status
+
+  - pack: linux
+    check: audit-logging
+
+  - pack: linux
+    check: unnecessary-services
+
+  - pack: linux
+    check: kernel-hardening
+
+  - pack: linux
+    check: filesystem-encryption
+
+  - pack: linux
+    check: user-accounts
+
+  - pack: linux
+    check: cron-permissions
+
+  # ===========================================
+  # AWS SECURITY
+  # Uncomment after setting AWS credentials
+  # ===========================================
+  # --- S3 ---
   # - pack: aws
   #   check: s3-encryption
   #   params:
   #     region: "us-east-1"
-  #
   # - pack: aws
   #   check: s3-public-access
   #   params:
   #     region: "us-east-1"
+  # - pack: aws
+  #   check: s3-versioning
+  #   params:
+  #     region: "us-east-1"
+  # - pack: aws
+  #   check: s3-logging
+  #   params:
+  #     region: "us-east-1"
+  # --- IAM ---
+  # - pack: aws
+  #   check: iam-password-policy
+  # - pack: aws
+  #   check: iam-mfa-enabled
+  # - pack: aws
+  #   check: iam-root-mfa
+  # - pack: aws
+  #   check: iam-unused-credentials
+  #   params:
+  #     max_age_days: "90"
+  # - pack: aws
+  #   check: iam-access-key-rotation
+  #   params:
+  #     max_age_days: "90"
+  # --- CloudTrail ---
+  # - pack: aws
+  #   check: cloudtrail-enabled
+  # - pack: aws
+  #   check: cloudtrail-log-validation
+  # --- Security Groups ---
+  # - pack: aws
+  #   check: sg-unrestricted-ssh
+  #   params:
+  #     region: "us-east-1"
+  # - pack: aws
+  #   check: sg-unrestricted-rdp
+  #   params:
+  #     region: "us-east-1"
+  # --- EBS / RDS ---
+  # - pack: aws
+  #   check: ebs-encryption
+  #   params:
+  #     region: "us-east-1"
+  # - pack: aws
+  #   check: rds-encryption
+  #   params:
+  #     region: "us-east-1"
+  # - pack: aws
+  #   check: rds-public-access
+  #   params:
+  #     region: "us-east-1"
+  # - pack: aws
+  #   check: rds-backup-enabled
+  #   params:
+  #     region: "us-east-1"
 
-  # --- GitHub Repository Security ---
-  # Uncomment after setting GITHUB_TOKEN above
+  # ===========================================
+  # GITHUB SECURITY
+  # Uncomment after setting GITHUB_TOKEN
+  # ===========================================
   # - pack: github
   #   check: branch-protection
   #   params:
   #     org: "your-org-name"
+  # - pack: github
+  #   check: secret-scanning
+  #   params:
+  #     org: "your-org-name"
+  # - pack: github
+  #   check: dependabot-alerts
+  #   params:
+  #     org: "your-org-name"
+  # - pack: github
+  #   check: org-2fa
+  #   params:
+  #     org: "your-org-name"
+  # - pack: github
+  #   check: repo-visibility
+  #   params:
+  #     org: "your-org-name"
+  # - pack: github
+  #   check: actions-security
+  #   params:
+  #     org: "your-org-name"
+
+  # ===========================================
+  # NETWORK SECURITY
+  # Uncomment and set target hosts/URLs
+  # ===========================================
+  # - pack: network
+  #   check: tls-config
+  #   params:
+  #     targets: "example.com:443"
+  # - pack: network
+  #   check: open-ports
+  #   params:
+  #     targets: "192.168.1.1"
+  #     allowed_ports: "22,80,443"
+  # - pack: network
+  #   check: dns-security
+  #   params:
+  #     domains: "example.com"
+  # - pack: network
+  #   check: http-headers
+  #   params:
+  #     targets: "https://example.com"
+  # - pack: network
+  #   check: certificate-expiry
+  #   params:
+  #     targets: "example.com:443"
+  #     warn_days: "30"
+
+  # ===========================================
+  # DOCKER / CONTAINER SECURITY
+  # Uncomment if Docker is installed
+  # ===========================================
+  # - pack: docker
+  #   check: docker-daemon-config
+  # - pack: docker
+  #   check: container-privileges
+  # - pack: docker
+  #   check: image-vulnerabilities
+  # - pack: docker
+  #   check: container-networking
+  # - pack: docker
+  #   check: docker-logging
+  # - pack: docker
+  #   check: docker-resource-limits

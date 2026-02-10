@@ -1,0 +1,82 @@
+name: network
+version: "1.0.0"
+description: "Network security compliance checks for TLS, open ports, DNS, HTTP headers, and certificate management"
+
+checks:
+  # --- TLS Configuration ---
+  - id: tls-config
+    description: "Verify TLS configuration on endpoints (minimum TLS 1.2, strong ciphers)"
+    script: check_tls_config.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-SC-8
+      - PCI-DSS-4.1
+      - CIS-AWS-2.4
+    params:
+      - name: targets
+        required: true
+        description: "Comma-separated host:port list"
+
+  # --- Open Ports ---
+  - id: open-ports
+    description: "Scan for unexpected open ports on target hosts"
+    script: check_open_ports.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.6
+      - NIST-CM-7
+      - PCI-DSS-1.1
+      - CIS-Linux-3.5
+    params:
+      - name: targets
+        required: true
+        description: "Comma-separated hosts"
+      - name: allowed_ports
+        required: false
+        default: "22,80,443"
+
+  # --- DNS Security ---
+  - id: dns-security
+    description: "Verify DNS security (DNSSEC support, no zone transfer leaks)"
+    script: check_dns_security.py
+    severity: medium
+    frameworks:
+      - SOC2-CC6.6
+      - NIST-SC-20
+    params:
+      - name: domains
+        required: true
+        description: "Comma-separated domains"
+
+  # --- HTTP Security Headers ---
+  - id: http-headers
+    description: "Check HTTP security headers (HSTS, CSP, X-Frame-Options, etc.)"
+    script: check_http_headers.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-SI-10
+      - PCI-DSS-6.5
+      - CIS-AWS-2.5
+    params:
+      - name: targets
+        required: true
+        description: "Comma-separated URLs"
+
+  # --- Certificate Expiry ---
+  - id: certificate-expiry
+    description: "Check TLS certificate expiration dates"
+    script: check_cert_expiry.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-SC-17
+      - PCI-DSS-4.1
+    params:
+      - name: targets
+        required: true
+        description: "Comma-separated host:port"
+      - name: warn_days
+        required: false
+        default: "30"

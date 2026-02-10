@@ -1,6 +1,6 @@
-# Binary
-comply-intel
-comply-intel.exe
+# Binary (root level only)
+/comply-intel
+/comply-intel.exe
 
 # Output files
 results/
