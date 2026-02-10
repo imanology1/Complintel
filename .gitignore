@@ -1,0 +1,25 @@
+# Binary
+comply-intel
+comply-intel.exe
+
+# Output files
+results/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
+
+# Secrets - NEVER commit these
+.env
+*.pem
+*.key
+credentials.json

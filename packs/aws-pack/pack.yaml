@@ -1,0 +1,30 @@
+name: aws
+version: "1.0.0"
+description: "AWS compliance checks for S3, IAM, and cloud infrastructure"
+
+checks:
+  - id: s3-encryption
+    description: "Verify that all S3 buckets have default encryption enabled"
+    script: check_s3_encryption.py
+    severity: high
+    frameworks:
+      - SOC2
+      - NIST-800-53
+      - CIS-AWS
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"
+
+  - id: s3-public-access
+    description: "Verify that S3 buckets do not allow public access"
+    script: check_s3_public_access.py
+    severity: critical
+    frameworks:
+      - SOC2
+      - PCI-DSS
+      - CIS-AWS
+    params:
+      - name: region
+        required: false
+        default: "us-east-1"

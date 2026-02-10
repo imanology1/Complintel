@@ -1,0 +1,62 @@
+# Comply-Intel Configuration
+# ===========================
+# This file tells the GRC Agent Factory which checks to run and how.
+
+# Path to the directory containing agent packs
+packs_dir: "./packs"
+
+# Schedule: "once" for a single scan, "every 1h" for interval, or cron "0 2 * * *"
+schedule: "once"
+
+# Number of checks to run in parallel
+concurrency: 4
+
+# Timeout per check script
+timeout: "120s"
+
+# Output configuration
+output:
+  format: "table"   # "json", "table", or "csv"
+  target: "stdout"   # "stdout" or "file"
+  # path: "./results/scan-output.json"  # required when target is "file"
+
+# Credentials injected as environment variables into agent scripts.
+# SECURITY: For production, use a secrets manager and inject at runtime.
+# These values are passed via env vars, never on the command line.
+credentials:
+  # AWS_ACCESS_KEY_ID: "YOUR_KEY_HERE"
+  # AWS_SECRET_ACCESS_KEY: "YOUR_SECRET_HERE"
+  # AWS_REGION: "us-east-1"
+  # GITHUB_TOKEN: "ghp_your_token_here"
+
+# Checks to execute
+# Each entry references a pack name and a check ID from that pack.
+checks:
+  # --- Linux Hardening ---
+  - pack: linux
+    check: password-policy
+    params:
+      min_length: "14"
+      max_days: "90"
+
+  - pack: linux
+    check: ssh-config
+
+  # --- AWS S3 Security ---
+  # Uncomment after setting AWS credentials above
+  # - pack: aws
+  #   check: s3-encryption
+  #   params:
+  #     region: "us-east-1"
+  #
+  # - pack: aws
+  #   check: s3-public-access
+  #   params:
+  #     region: "us-east-1"
+
+  # --- GitHub Repository Security ---
+  # Uncomment after setting GITHUB_TOKEN above
+  # - pack: github
+  #   check: branch-protection
+  #   params:
+  #     org: "your-org-name"

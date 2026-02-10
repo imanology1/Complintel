@@ -1,0 +1,30 @@
+name: linux
+version: "1.0.0"
+description: "Linux system hardening and compliance checks"
+
+checks:
+  - id: password-policy
+    description: "Verify that system password policies meet minimum complexity and expiration requirements"
+    script: check_password_policy.sh
+    severity: high
+    frameworks:
+      - CIS-Linux
+      - NIST-800-53
+      - SOC2
+    params:
+      - name: min_length
+        required: false
+        default: "14"
+      - name: max_days
+        required: false
+        default: "90"
+
+  - id: ssh-config
+    description: "Verify SSH daemon is configured securely (no root login, no password auth, protocol 2)"
+    script: check_ssh_config.sh
+    severity: critical
+    frameworks:
+      - CIS-Linux
+      - NIST-800-53
+      - PCI-DSS
+    params: []
