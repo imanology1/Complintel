@@ -1,0 +1,123 @@
+#!/usr/bin/env python3
+"""
+AWS RDS Public Access Check
+Verifies that RDS instances are not publicly accessible.
+
+Required environment variables:
+  AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY
+  AWS_REGION (or --region parameter)
+
+Output: JSON array of Finding objects to stdout.
+"""
+
+import json
+import os
+import sys
+
+
+def parse_args(argv):
+    """Parse command-line arguments."""
+    region = os.environ.get("AWS_REGION", "us-east-1")
+
+    i = 1
+    while i < len(argv):
+        if argv[i] == "--region" and i + 1 < len(argv):
+            region = argv[i + 1]
+            i += 2
+        elif argv[i].startswith("--region="):
+            region = argv[i].split("=", 1)[1]
+            i += 1
+        else:
+            i += 1
+
+    return region
+
+
+def main():
+    findings = []
+    region = parse_args(sys.argv)
+
+    try:
+        import boto3
+    except ImportError:
+        findings.append({
+            "resource_id": "boto3-dependency",
+            "resource_type": "AWS::RDS::DBInstance",
+            "status": "ERROR",
+            "message": "boto3 library is not installed. Run: pip install boto3"
+        })
+        json.dump(findings, sys.stdout, indent=2)
+        return
+
+    try:
+        session = boto3.Session(region_name=region)
+        rds = session.client("rds")
+
+        paginator = rds.get_paginator("describe_db_instances")
+        instances = []
+        for page in paginator.paginate():
+            instances.extend(page.get("DBInstances", []))
+
+        if not instances:
+            findings.append({
+                "resource_id": "rds-public-check",
+                "resource_type": "AWS::RDS::DBInstance",
+                "status": "PASS",
+                "message": f"No RDS instances found in region {region}"
+            })
+            json.dump(findings, sys.stdout, indent=2)
+            return
+
+        for instance in instances:
+            db_id = instance.get("DBInstanceIdentifier", "unknown")
+            db_arn = instance.get("DBInstanceArn", db_id)
+            publicly_accessible = instance.get("PubliclyAccessible", False)
+            engine = instance.get("Engine", "N/A")
+            instance_class = instance.get("DBInstanceClass", "N/A")
+            endpoint = instance.get("Endpoint", {})
+            endpoint_address = endpoint.get("Address", "N/A") if endpoint else "N/A"
+            endpoint_port = endpoint.get("Port", "N/A") if endpoint else "N/A"
+
+            if not publicly_accessible:
+                findings.append({
+                    "resource_id": db_arn,
+                    "resource_type": "AWS::RDS::DBInstance",
+                    "status": "PASS",
+                    "message": f"RDS instance '{db_id}' is not publicly accessible",
+                    "details": json.dumps({
+                        "db_instance_id": db_id,
+                        "publicly_accessible": False,
+                        "engine": engine,
+                        "instance_class": instance_class
+                    })
+                })
+            else:
+                findings.append({
+                    "resource_id": db_arn,
+                    "resource_type": "AWS::RDS::DBInstance",
+                    "status": "FAIL",
+                    "message": f"RDS instance '{db_id}' is publicly accessible",
+                    "details": json.dumps({
+                        "db_instance_id": db_id,
+                        "publicly_accessible": True,
+                        "engine": engine,
+                        "instance_class": instance_class,
+                        "endpoint_address": endpoint_address,
+                        "endpoint_port": endpoint_port
+                    })
+                })
+
+    except Exception as e:
+        findings.append({
+            "resource_id": "rds-public-check",
+            "resource_type": "AWS::RDS::DBInstance",
+            "status": "ERROR",
+            "message": f"Unexpected error: {str(e)}"
+        })
+
+    json.dump(findings, sys.stdout, indent=2)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,53 @@
+name: docker-security
+version: "1.0.0"
+description: "Docker/Container Security Agent Pack - Comprehensive security checks for Docker environments"
+author: "Comply-Intel"
+min_agent_version: "1.0.0"
+tags:
+  - docker
+  - containers
+  - cis-benchmark
+  - security
+
+checks:
+  - id: docker-daemon-config
+    description: "Verify Docker daemon security configuration"
+    script: check_daemon_config.sh
+    severity: critical
+    frameworks: [CIS-Docker-2.1, NIST-CM-6, SOC2-CC6.8]
+    params: []
+
+  - id: container-privileges
+    description: "Detect containers running with elevated privileges (--privileged, root user)"
+    script: check_container_privileges.sh
+    severity: critical
+    frameworks: [CIS-Docker-5.1, NIST-AC-6, PCI-DSS-7.1, SOC2-CC6.3]
+    params: []
+
+  - id: image-vulnerabilities
+    description: "Check for containers running images with known vulnerabilities"
+    script: check_image_vulnerabilities.sh
+    severity: high
+    frameworks: [CIS-Docker-4.1, NIST-SI-2, PCI-DSS-6.2, SOC2-CC7.1]
+    params: []
+
+  - id: container-networking
+    description: "Verify container network isolation and exposed ports"
+    script: check_container_networking.sh
+    severity: high
+    frameworks: [CIS-Docker-5.7, NIST-SC-7, PCI-DSS-1.3, SOC2-CC6.6]
+    params: []
+
+  - id: docker-logging
+    description: "Verify container logging driver is configured"
+    script: check_docker_logging.sh
+    severity: medium
+    frameworks: [CIS-Docker-2.12, NIST-AU-2, PCI-DSS-10.2, SOC2-CC7.2]
+    params: []
+
+  - id: docker-resource-limits
+    description: "Verify containers have CPU and memory limits set"
+    script: check_resource_limits.sh
+    severity: medium
+    frameworks: [CIS-Docker-5.10, NIST-SC-6, SOC2-A1.2]
+    params: []

@@ -1,0 +1,114 @@
+name: linux
+version: "1.0.0"
+description: "Linux system hardening and compliance checks"
+
+checks:
+  - id: password-policy
+    description: "Verify that system password policies meet minimum complexity and expiration requirements"
+    script: check_password_policy.sh
+    severity: high
+    frameworks:
+      - CIS-Linux
+      - NIST-800-53
+      - SOC2
+    params:
+      - name: min_length
+        required: false
+        default: "14"
+      - name: max_days
+        required: false
+        default: "90"
+
+  - id: ssh-config
+    description: "Verify SSH daemon is configured securely (no root login, no password auth, protocol 2)"
+    script: check_ssh_config.sh
+    severity: critical
+    frameworks:
+      - CIS-Linux
+      - NIST-800-53
+      - PCI-DSS
+    params: []
+
+  - id: file-permissions
+    description: "Check critical file permissions (/etc/passwd, /etc/shadow, /etc/group, /etc/gshadow)"
+    script: check_file_permissions.sh
+    severity: high
+    frameworks:
+      - CIS-Linux-6.1
+      - NIST-AC-3
+      - SOC2-CC6.1
+    params: []
+
+  - id: firewall-status
+    description: "Verify firewall (iptables/nftables/ufw) is active with default deny policy"
+    script: check_firewall.sh
+    severity: critical
+    frameworks:
+      - CIS-Linux-3.5
+      - NIST-SC-7
+      - PCI-DSS-1.1
+      - SOC2-CC6.6
+    params: []
+
+  - id: audit-logging
+    description: "Verify auditd is installed, running, and configured for key events"
+    script: check_audit_logging.sh
+    severity: high
+    frameworks:
+      - CIS-Linux-4.1
+      - NIST-AU-2
+      - PCI-DSS-10.1
+      - SOC2-CC7.2
+    params: []
+
+  - id: unnecessary-services
+    description: "Detect running services that should be disabled (telnet, rsh, rlogin, etc.)"
+    script: check_services.sh
+    severity: medium
+    frameworks:
+      - CIS-Linux-2.1
+      - NIST-CM-7
+      - PCI-DSS-2.2.2
+      - SOC2-CC6.8
+    params: []
+
+  - id: kernel-hardening
+    description: "Verify sysctl kernel hardening parameters (ASLR, exec-shield, SYN cookies, etc.)"
+    script: check_kernel_hardening.sh
+    severity: high
+    frameworks:
+      - CIS-Linux-3.1
+      - NIST-SC-7
+      - SOC2-CC6.6
+    params: []
+
+  - id: filesystem-encryption
+    description: "Check for encrypted filesystems and LUKS volumes"
+    script: check_fs_encryption.sh
+    severity: high
+    frameworks:
+      - NIST-SC-28
+      - PCI-DSS-3.4
+      - SOC2-CC6.1
+    params: []
+
+  - id: user-accounts
+    description: "Audit user accounts for UID 0 duplicates, empty passwords, and shell access"
+    script: check_user_accounts.sh
+    severity: critical
+    frameworks:
+      - CIS-Linux-6.2
+      - NIST-IA-5
+      - PCI-DSS-8.2
+      - SOC2-CC6.1
+    params: []
+
+  - id: cron-permissions
+    description: "Verify cron job files have proper permissions and ownership"
+    script: check_cron_permissions.sh
+    severity: medium
+    frameworks:
+      - CIS-Linux-5.1
+      - NIST-AC-3
+      - SOC2-CC6.1
+    params: []

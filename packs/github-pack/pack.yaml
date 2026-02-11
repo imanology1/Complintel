@@ -1,0 +1,92 @@
+name: github
+version: "1.0.0"
+description: "GitHub repository security and compliance checks"
+
+checks:
+  - id: branch-protection
+    description: "Verify that default branches have protection rules enabled (require reviews, status checks, no force push)"
+    script: check_branch_protection.py
+    severity: high
+    frameworks:
+      - SOC2
+      - CIS-GitHub
+    params:
+      - name: org
+        required: true
+      - name: repo
+        required: false
+        default: ""
+
+  - id: secret-scanning
+    description: "Verify secret scanning is enabled on repositories"
+    script: check_secret_scanning.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-SA-11
+      - PCI-DSS-6.5
+      - CIS-GitHub-1.3
+    params:
+      - name: org
+        required: true
+      - name: repo
+        required: false
+        default: ""
+
+  - id: dependabot-alerts
+    description: "Check for unresolved critical/high Dependabot vulnerability alerts"
+    script: check_dependabot.py
+    severity: high
+    frameworks:
+      - SOC2-CC7.1
+      - NIST-SI-2
+      - PCI-DSS-6.2
+      - CIS-GitHub-2.1
+    params:
+      - name: org
+        required: true
+      - name: repo
+        required: false
+        default: ""
+
+  - id: org-2fa
+    description: "Verify two-factor authentication is enforced for the organization"
+    script: check_org_2fa.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - SOC2-CC6.2
+      - NIST-IA-2
+      - PCI-DSS-8.3
+      - CIS-GitHub-1.1
+    params:
+      - name: org
+        required: true
+
+  - id: repo-visibility
+    description: "Audit repositories for unintended public visibility"
+    script: check_repo_visibility.py
+    severity: critical
+    frameworks:
+      - SOC2-CC6.1
+      - NIST-AC-3
+      - PCI-DSS-7.1
+      - CIS-GitHub-1.2
+    params:
+      - name: org
+        required: true
+
+  - id: actions-security
+    description: "Check GitHub Actions workflow permissions and allowed actions policy"
+    script: check_actions_security.py
+    severity: high
+    frameworks:
+      - SOC2-CC6.8
+      - NIST-SA-11
+      - CIS-GitHub-3.1
+    params:
+      - name: org
+        required: true
+      - name: repo
+        required: false
+        default: ""
